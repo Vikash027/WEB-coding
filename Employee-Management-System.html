@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Management System</title>
+  
+  <style> 
+  .container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.filters {
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.pagination {
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+ </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Employee Management System</h1>
+    <div class="filters">
+      <label for="department">Filter by Department:</label>
+      <select id="department">
+        <option value="">--Select Department--</option>
+        <option value="hr">HR</option>
+        <option value="finance">Finance</option>
+        <option value="marketing">Marketing</option>
+        <option value="engineering">Engineering</option>
+        <option value="operations">Operations</option>
+      </select>
+      <label for="gender">Filter by Gender:</label>
+      <select id="gender">
+        <option value="">--Select Gender--</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+      <label for="sort">Sort by Salary:</label>
+      <select id="sort">
+        <option value="asc">Low to High</option>
+        <option value="desc">High to Low</option>
+      </select>
+    </div>
+    <table id="employee-table">
+      <thead>
+        <tr>
+          <th>S.no</th>
+          <th>Name</th>
+          <th>Gender</th>
+          <th>Department</th>
+          <th>Salary</th>
+        </tr>
+      </thead>
+      <tbody id="employee-data">
+        <!-- Table rows will be populated here -->
+      <tr>
+        <td>1</td>
+        <td>Benson Yoell</td>
+        <td>female</td>
+        <td>operations</td>
+        <td>25000</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Lorettalorna Rosenfarb</td>
+        <td>female</td>
+        <td>operations</td>
+        <td>25000</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Claudia Vasyukhin</td>
+        <td>female</td>
+        <td>hr</td>
+        <td>25000</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Brynn Wildblood</td>
+        <td>female</td>
+        <td>finance</td>
+        <td>27000</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Elli Godlip</td>
+        <td>female</td>
+        <td>hr</td>
+        <td>27000</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Rina Nasey</td>
+        <td>female</td>
+        <td>engineering</td>
+        <td>27000</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Tobi Pizer</td>
+        <td>female</td>
+        <td>operations</td>
+        <td>30000</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Ilyssa Staning</td>
+        <td>female</td>
+        <td>operations</td>
+        <td>35000</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Monty Meers</td>
+        <td>female</td>
+        <td>engineering</td>
+        <td>35000</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Courtenay Risborough</td>
+        <td>female</td>
+        <td>hr</td>
+        <td>35000</td>
+      </tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <button id="prev-page" disabled>Previous</button>
+      <button id="next-page">Next</button>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+  const tableBody = document.getElementById('employee-data');
+  const prevButton = document.getElementById('prev-page');
+  const nextButton = document.getElementById('next-page');
+
+  let currentPage = 1;
+  let totalPages = 1;
+
+  function fetchData(page = 1, limit = 10, filterBy = '', filterValue = '', sort = '', order = '') {
+    const url = `https://dbioz2ek0e.execute-api.ap-south-1.amazonaws.com/mockapi/get-employees?page=${page}&limit=${limit}&filterBy=${filterBy}&filterValue=${filterValue}&sort=${sort}&order=${order}`;
+    
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        populateTable(data);
+        totalPages = Math.ceil(data.total / limit);
+        updatePaginationButtons();
+      })
+      .catch(error => console.error('Error fetching data:', error));
+  }
+
+  function populateTable(data) {
+    tableBody.innerHTML = '';
+    data.forEach((employee, index) => {
+      const row = `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${employee.name}</td>
+          <td>${employee.gender}</td>
+          <td>${employee.department}</td>
+          <td>${employee.salary}</td>
+        </tr>
+      `;
+      tableBody.innerHTML += row;
+    });
+  }
+
+  function updatePaginationButtons() {
+    prevButton.disabled = currentPage === 1;
+    nextButton.disabled = currentPage === totalPages;
+  }
+
+  prevButton.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      fetchData(currentPage);
+    }
+  });
+
+  nextButton.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      fetchData(currentPage);
+    }
+  });
+
+  document.getElementById('department').addEventListener('change', function() {
+    const department = this.value;
+    fetchData(1, 10, 'department', department);
+  });
+
+  document.getElementById('gender').addEventListener('change', function() {
+    const gender = this.value;
+    fetchData(1, 10, 'gender', gender);
+  });
+
+  document.getElementById('sort').addEventListener('change', function() {
+    const order = this.value;
+    fetchData(1, 10, '', '', 'salary', order);
+  });
+
+  // Initial fetch
+  fetchData();
+});
+
+  </script>
+</body>
+</html>
